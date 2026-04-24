@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Fiches de Stage</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --primary: #1e3a5f;
+            --primary-light: #2c5282;
+            --accent: #c9a227;
+            --accent-hover: #b8941f;
+            --bg: #f0f4f8;
+            --card-bg: #ffffff;
+            --text: #2d3748;
+            --text-light: #718096;
+            --border: #e2e8f0;
+            --shadow: 0 10px 40px rgba(30, 58, 95, 0.1);
+            --shadow-hover: 0 20px 60px rgba(30, 58, 95, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* Animated background particles */
+        .bg-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.05;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .shape-1 {
+            width: 400px;
+            height: 400px;
+            background: var(--primary);
+            top: -100px;
+            right: -100px;
+            animation-delay: 0s;
+        }
+
+        .shape-2 {
+            width: 300px;
+            height: 300px;
+            background: var(--accent);
+            bottom: -50px;
+            left: -50px;
+            animation-delay: -5s;
+        }
+
+        .shape-3 {
+            width: 200px;
+            height: 200px;
+            background: var(--primary-light);
+            top: 50%;
+            left: 50%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.05); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 2rem 0;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 4px 20px rgba(30, 58, 95, 0.3);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .header-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.85;
+            font-weight: 300;
+        }
+
+        .header-badge {
+            background: var(--accent);
+            color: var(--primary);
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(201, 162, 39, 0.3);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid var(--border);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-header {
+            padding: 1.5rem 2rem;
+            background: linear-gradient(135deg, #fafbfc 0%, #f0f4f8 100%);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-header-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .card-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-label i {
+            color: var(--accent);
+            font-size: 0.85rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            color: var(--text);
+            background: #fafbfc;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(30, 58, 95, 0.08);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-light);
+            font-weight: 300;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(30, 58, 95, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(30, 58, 95, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            background: #f8fafc;
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+            color: var(--primary);
+            box-shadow: 0 4px 15px rgba(201, 162, 39, 0.3);
+        }
+
+        .btn-accent:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(201, 162, 39, 0.4);
+        }
+
+        /* Preview Section */
+        .preview-container {
+            background: #e2e8f0;
+            border-radius: 16px;
+            padding: 2rem;
+            min-height: 600px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            overflow: auto;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /* PDF Document Styles */
+        #pdf-document {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 25mm 20mm;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: #000;
+            position: relative;
+        }
+
+        .pdf-head {
+            width: 100%;
+            height: 100px;
+            background: url('entete_insam.png') no-repeat center;
+            background-size: 100%;
+        }
+
+        #pdf-document table {
+            width: 100%;
+            height: auto;
+            margin: 5px 0px;
+        }
+
+        #pdf-document table td {
+            vertical-align: top;
+        }
+
+        .pdf-ref {
+            text-align: left;
+        }
+
+        .pdf-date {
+            text-align: right;
+        }
+
+        .pdf-promoter {
+            text-align: left;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .pdf-recipient {
+            text-align: right;
+        }
+
+        .pdf-object-label {
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        .pdf-body {
+            text-align: justify;
+            /*line-height: 1.8;*/
+        }
+
+        .pdf-body p {
+            margin-bottom: 1rem;
+            text-indent: 0;
+        }
+
+        .pdf-salutation {
+            margin-bottom: 1rem;
+        }
+
+        .pdf-closing {
+            margin-top: 2rem;
+            text-align: justify;
+        }
+
+        .pdf-attachments {
+            margin-top: 2rem;
+            line-height: 0.8;
+        }
+
+        .pdf-attachments-title {
+            text-decoration: underline;
+            font-style: italic;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .pdf-attachments ul {
+            list-style: disc;
+            padding-left: 2rem;
+            font-style: italic;
+        }
+
+        .pdf-attachments li {
+            margin-bottom: 0.3rem;
+        }
+
+        .pdf-signature {
+            text-align: center;
+            font-size: 9pt;
+        }
+
+        .pdf-footer {
+            text-align: center;
+            font-size: 5pt;
+            font-style: italic;
+        }
+
+
+        .highlight-name {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .highlight-specialty {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .highlight-phone {
+            font-weight: bold;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(30, 58, 95, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255,255,255,0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-light);
+            border-radius: 4px;
+        }
+
+        /* Section titles in form */
+        .section-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-light);
+            margin: 1.5rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border);
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #pdf-document, #pdf-document * {
+                visibility: visible;
+            }
+            #pdf-document {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 20mm;
+                box-shadow: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            .container {
+                padding: 1rem;
+            }
+            .card-body {
+                padding: 1.5rem;
+            }
+            #pdf-document {
+                width: 100%;
+                padding: 15mm;
+                font-size: 11pt;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">
+                    <i class="fas fa-file-signature"></i>
+                </div>
+                <div>
+                    <div class="header-title">Générateur de Fiches de Stage</div>
+                    <div class="header-subtitle">Créez vos demandes de stage académique en quelques clics</div>
+                </div>
+            </div>
+            <div class="header-badge">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Étudiants BTS</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main-grid">
+            <!-- Formulaire -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-icon">
+                        <i class="fas fa-pen-fancy"></i>
+                    </div>
+                    <h2>Informations du Stagiaire</h2>
+                </div>
+                <div class="card-body">
+                    <form id="stageForm">
+                        <div class="section-title">
+                            <i class="fas fa-user-graduate"></i> Identité de l'étudiant
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-user"></i> Nom et Prénom
+                            </label>
+                            <input type="text" class="form-input" id="nomPrenom" 
+                                placeholder="Ex: ZEUCHEU NITEDEM ZEUMO VITAL PARFAIT" required
+                                value="ZEUCHEU NITEDEM ZEUMO VITAL PARFAIT">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-book"></i> Spécialité
+                                </label>
+                                <input type="text" class="form-input" id="specialite" 
+                                    placeholder="Ex: Electrotechnique" required
+                                    value="Electrotechnique">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-calendar-alt"></i> Année académique
+                                </label>
+                                <input type="text" class="form-input" id="annee" 
+                                    placeholder="Ex: 2025--2026" value="2025--2026">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-phone"></i> Téléphone 1
+                                </label>
+                                <input type="tel" class="form-input" id="tel1" 
+                                    placeholder="Ex: 692016003" required
+                                    value="692016003">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-phone-alt"></i> Téléphone 2
+                                </label>
+                                <input type="tel" class="form-input" id="tel2" 
+                                    placeholder="Ex: 674593333"
+                                    value="674593333">
+                            </div>
+                        </div>
+
+                        <div class="section-title">
+                            <i class="fas fa-building"></i> Entreprise d'accueil
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-industry"></i> Nom de l'entreprise
+                            </label>
+                            <input type="text" class="form-input" id="entreprise" 
+                                placeholder="Ex: IDI ENERGIE" required 
+                                value="IDI ENERGIE">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-phone-square"></i> Téléphone de l'entreprise
+                            </label>
+                            <input type="tel" class="form-input" id="telEntreprise" 
+                                placeholder="Ex: 675768602" required
+                                value="675768602">
+                        </div>
+
+                        <div class="section-title">
+                            <i class="fas fa-clock"></i> Période de stage
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-play"></i> Mois de début
+                                </label>
+                                <select class="form-input" id="moisDebut">
+                                    <option value="Janvier">Janvier</option>
+                                    <option value="Février">Février</option>
+                                    <option value="Mars">Mars</option>
+                                    <option value="Avril">Avril</option>
+                                    <option value="Mai">Mai</option>
+                                    <option value="Juin">Juin</option>
+                                    <option value="Juillet" selected>Juillet</option>
+                                    <option value="Août">Août</option>
+                                    <option value="Septembre">Septembre</option>
+                                    <option value="Octobre">Octobre</option>
+                                    <option value="Novembre">Novembre</option>
+                                    <option value="Décembre">Décembre</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-stop"></i> Mois de fin
+                                </label>
+                                <select class="form-input" id="moisFin">
+                                    <option value="Janvier">Janvier</option>
+                                    <option value="Février">Février</option>
+                                    <option value="Mars">Mars</option>
+                                    <option value="Avril">Avril</option>
+                                    <option value="Mai">Mai</option>
+                                    <option value="Juin">Juin</option>
+                                    <option value="Juillet">Juillet</option>
+                                    <option value="Août">Août</option>
+                                    <option value="Septembre" selected>Septembre</option>
+                                    <option value="Octobre">Octobre</option>
+                                    <option value="Novembre">Novembre</option>
+                                    <option value="Décembre">Décembre</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-calendar"></i> Année du stage
+                            </label>
+                            <input type="number" class="form-input" id="anneeStage" 
+                                placeholder="Ex: 2026" value="2026" min="2020" max="2035">
+                        </div>
+
+                        <div class="section-title">
+                            <i class="fas fa-cog"></i> Paramètres de la lettre
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-map-marker-alt"></i> Ville
+                            </label>
+                            <input type="text" class="form-input" id="ville" 
+                                placeholder="Ex: Douala" value="Douala">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-calendar-day"></i> Date de la lettre
+                            </label>
+                            <input type="date" class="form-input" id="dateLettre">
+                        </div>
+
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-primary" onclick="genererPDF()">
+                                <i class="fas fa-file-pdf"></i> Générer le PDF
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="reinitialiser()">
+                                <i class="fas fa-redo"></i> Réinitialiser
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Prévisualisation -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-icon" style="background: linear-gradient(135deg, #c9a227 0%, #b8941f 100%);">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <h2>Prévisualisation</h2>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <div class="preview-container">
+                        <div id="pdf-document">
+                            <div class="pdf-head">
+                            </div>
+
+
+                            <table border="0" cellspacing="0" cellpadding="2">
+                                <tr>
+                                    <td class="pdf-ref">
+                                        Réf : N°………/IUes/Insam/CE/RAAC/CD/RS/2026
+                                    </td>
+                                    <td class="pdf-date">
+                                        <span id="previewVille">Douala</span>, le <span id="previewDate">21 Avril 2026</span>
+                                    </td>
+                                </tr>
+                            </table>
+
+
+
+                            <table border="0" cellspacing="0" cellpadding="2">
+                                <tr>
+                                    <td class="pdf-promoter">
+                                        LE PROMOTEUR
+                                    </td>
+                                    <td class="pdf-recipient">
+                                        <strong>A</strong><br />
+                                        <strong>Monsieur le Directeur Général<br />
+                                        de <span id="previewEntreprise">IDI ENERGIE</span></strong><br>
+                                        <strong>TEL : <span id="previewTelEntreprise">675768602</span></strong>
+                                    </td>
+                                </tr>
+                            </table>
+
+
+                            <table border="0" cellspacing="0" cellpadding="2">
+                                <tr>
+                                    <td class="pdf-object-label" width="auto">
+                                        Objet : 
+                                    </td>
+                                    <td class="pdf-period">
+                                        Demande de stage académique<br>
+                                        Période de : 
+                                        <span id="previewMoisDebut">Juillet</span> - <span id="previewMoisFin">Septembre</span> 
+                                        <span id="previewAnneeStage">2026</span>
+                                    </td>
+                                </tr>
+                            </table>
+
+
+                            <div class="pdf-body">
+                                <p class="pdf-salutation">Monsieur le Directeur Général,</p>
+
+                                <p>
+                                    Nous avons l'honneur de venir auprès de votre haute bienveillance solliciter par la présente, 
+                                    l'admission en qualité de stagiaire de notre étudiant(e) 
+                                    <span class="highlight-name" id="previewNom">ZEUCHEU NITEDEM ZEUMO VITAL PARFAIT</span> 
+                                    régulièrement inscrit(e) au cycle de Brevet de Technicien Supérieur première année, 
+                                    spécialité <span class="highlight-specialty" id="previewSpecialite">Electrotechnique</span> 
+                                    et répondant au numéro <span class="highlight-phone" id="previewTel">692016003/ 674593333</span>.
+                                </p>
+
+                                <p>
+                                    En principe, la formation d'un étudiant ayant un caractère académique doit se dérouler en deux phases. 
+                                    Une phase théorique constituée des enseignements dispensés au sein de l'Institution Universitaire formatrice 
+                                    et une phase pratique au sein d'une entreprise de grande envergure.
+                                </p>
+
+                                <p>
+                                    L'objectif de ce stage est de permettre aux étudiants de ladite spécialité d'acquérir le savoir-faire 
+                                    devant compléter les enseignements reçus, de travailler au sein d'une équipe et de préparer 
+                                    leur future insertion socioprofessionnelle.
+                                </p>
+
+                                <p>
+                                    Nous proposons pour le bon déroulement dudit stage qu'il ait lieu dans la période allant de 
+                                    <span id="previewMoisDebut2">Juillet</span> à <span id="previewMoisFin2">Septembre</span> 
+                                    <span id="previewAnneeStage2">2026</span> au sein de la structure dont vous avez la charge.
+                                </p>
+
+                                <p class="pdf-closing">
+                                    Dans l'attente de vos instructions, nous restons à votre entière disposition à toutes fins utiles 
+                                    et vous prions d'accepter, Monsieur le Directeur Général, l'expression de notre très haute considération.
+                                </p>
+                            </div>
+
+                            <div class="pdf-attachments">
+                                <div class="pdf-attachments-title">Pièces jointes :</div>
+                                <ul>
+                                    <li>Fiche d'appréciation ;</li>
+                                    <li>Convention</li>
+                                </ul>
+                            </div>
+
+                            <table border="0" cellspacing="0" cellpadding="2">
+                                <tr>
+                                    <td width="50%">
+                                    </td>
+                                    <td width="50%" class="pdf-signature">
+                                        <strong>
+                                            Pour le Promoteur et par ordre, 
+                                            <br />Le CHEF D’Etablissement
+                                        </strong>
+                                        <br />
+                                        <strong>M KAMWA Michael</strong>
+                                    </td>
+                                </tr>
+                            </table>
+
+
+                            <div class="pdf-footer">
+                                Arrêté d’autorisation numéro 05/ 0028/MINESUP du 12/01/2005 de Monsieur le Ministre de l’Enseignement Supérieur
+                                <br />
+                                Agrément n° 08/0135/MINESUP du 06 mai 2008 de Monsieur le Ministre de l’Enseignement Supérieur
+                                <br />
+                                Arrêté de transformation de l’INSAM en IUEs n°12/0365/MINESUP du 12/08/2012.
+                                <br />
+                                BP : 4100 Douala   T él/Fax :2 33 40 68 03  Cell : 696 16 20 16 / 670 86 19 65  E-mail : efpsaf@yahoo.fr Site : www.iues-univ.com
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Génération du PDF en cours...</div>
+    </div>
+
+    <script>
+        // Initialiser la date du jour
+        document.getElementById('dateLettre').valueAsDate = new Date();
+        mettreAJourDate();
+
+        // Écouteurs d'événements pour la prévisualisation en temps réel
+        const champs = {
+            'nomPrenom': 'previewNom',
+            'specialite': 'previewSpecialite',
+            'tel1': 'previewTel',
+            'tel2': 'previewTel',
+            'entreprise': 'previewEntreprise',
+            'telEntreprise': 'previewTelEntreprise',
+            'ville': 'previewVille',
+            'moisDebut': ['previewMoisDebut', 'previewMoisDebut2'],
+            'moisFin': ['previewMoisFin', 'previewMoisFin2'],
+            'anneeStage': ['previewAnneeStage', 'previewAnneeStage2']
+        };
+
+        // Gestion spéciale pour les téléphones (concaténation)
+        function mettreAJourTelephones() {
+            const tel1 = document.getElementById('tel1').value || '692016003';
+            const tel2 = document.getElementById('tel2').value || '674593333';
+            let texte = tel1;
+            if (tel2) {
+                texte += '/ ' + tel2;
+            }
+            document.getElementById('previewTel').textContent = texte;
+        }
+
+        // Gestion de la date
+        function mettreAJourDate() {
+            const dateInput = document.getElementById('dateLettre').value;
+            if (dateInput) {
+                const date = new Date(dateInput);
+                const mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+                              'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+                const dateFormatee = date.getDate() + ' ' + mois[date.getMonth()] + ' ' + date.getFullYear();
+                document.getElementById('previewDate').textContent = dateFormatee;
+            }
+        }
+
+        // Attacher les écouteurs
+        Object.keys(champs).forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('input', function() {
+                    if (id === 'tel1' || id === 'tel2') {
+                        mettreAJourTelephones();
+                    } else if (id === 'dateLettre') {
+                        mettreAJourDate();
+                    } else {
+                        const cibles = champs[id];
+                        if (Array.isArray(cibles)) {
+                            cibles.forEach(cible => {
+                                const el = document.getElementById(cible);
+                                if (el) el.textContent = this.value || el.getAttribute('data-default') || '';
+                            });
+                        } else {
+                            const el = document.getElementById(cibles);
+                            if (el) el.textContent = this.value || el.getAttribute('data-default') || '';
+                        }
+                    }
+                });
+            }
+        });
+
+        // Sauvegarder les valeurs par défaut
+        document.querySelectorAll('[id^="preview"]').forEach(el => {
+            el.setAttribute('data-default', el.textContent);
+        });
+
+        function genererPDF() {
+            // Validation
+            const required = ['nomPrenom', 'specialite', 'tel1', 'entreprise', 'telEntreprise'];
+            for (let id of required) {
+                if (!document.getElementById(id).value.trim()) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Champ requis',
+                        text: 'Veuillez remplir tous les champs obligatoires.',
+                        confirmButtonColor: '#1e3a5f'
+                    });
+                    document.getElementById(id).focus();
+                    return;
+                }
+            }
+
+            const loading = document.getElementById('loadingOverlay');
+            loading.classList.add('active');
+
+            const element = document.getElementById('pdf-document');
+            const nom = document.getElementById('nomPrenom').value.trim().replace(/\s+/g, '_');
+            const entreprise = document.getElementById('entreprise').value.trim().replace(/\s+/g, '_');
+
+            const opt = {
+                margin: 0,
+                filename: `Fiche_Stage_${nom}_${entreprise}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2, 
+                    useCORS: true,
+                    letterRendering: true,
+                    scrollX: 0,
+                    scrollY: 0
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait'
+                }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                loading.classList.remove('active');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'PDF généré !',
+                    text: 'Votre fiche de stage a été téléchargée avec succès.',
+                    confirmButtonColor: '#1e3a5f',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            }).catch(err => {
+                loading.classList.remove('active');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: 'Une erreur est survenue lors de la génération du PDF.',
+                    confirmButtonColor: '#1e3a5f'
+                });
+                console.error(err);
+            });
+        }
+
+        function reinitialiser() {
+            Swal.fire({
+                title: 'Réinitialiser ?',
+                text: 'Tous les champs seront vidés.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1e3a5f',
+                cancelButtonColor: '#718096',
+                confirmButtonText: 'Oui, réinitialiser',
+                cancelButtonText: 'Annuler'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('stageForm').reset();
+                    document.getElementById('dateLettre').valueAsDate = new Date();
+                    mettreAJourDate();
+
+                    // Restaurer les valeurs par défaut dans la prévisualisation
+                    document.querySelectorAll('[id^="preview"]').forEach(el => {
+                        const defaut = el.getAttribute('data-default');
+                        if (defaut) el.textContent = defaut;
+                    });
+                    mettreAJourTelephones();
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Réinitialisé',
+                        text: 'Le formulaire a été vidé.',
+                        confirmButtonColor: '#1e3a5f',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+
+        // Animation d'entrée
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html>
